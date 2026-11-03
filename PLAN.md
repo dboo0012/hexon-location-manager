@@ -71,7 +71,7 @@ Every location query filters by `user_id = req.user.id` taken from the verified 
 - [x] **B3 Auth** — register/login/me, bcryptjs hashing, JWT (HS256, configurable expiry), `requireAuth` middleware, zod validation, central error handler. Tests: register, duplicate email 409, bad login 401, missing/invalid token 401.
 - [x] **B4 Locations CRUD** — GET/POST scoped by user. Tests incl. **user isolation** (A adds 5, B sees 0) and coordinate validation.
 - [x] **B5 ZIP upload** — multer memory storage (size limit), validate ZIP has exactly one file entry and it is `.txt` (directory-only entries ignored), parse rows (optional header, trims, name may contain commas → last two fields are coords), validate ranges, insert in one transaction. Unit tests for the parser + integration tests for valid / multi-file / non-txt / not-a-zip / malformed rows / empty file.
-- [ ] **B6 Docker** — multi-stage `backend/Dockerfile`, compose `backend` service depending on healthy postgres; verify `docker compose up` serves `/api/health`.
+- [x] **B6 Docker** — multi-stage `backend/Dockerfile`, compose `backend` service depending on healthy postgres; verify `docker compose up` serves `/api/health`.
 
 ### Frontend
 - [ ] **F1 Scaffold** — Vite React TS, Tailwind v4, react-router, zustand, react-leaflet + leaflet CSS + marker icon fix, API client with bearer token + 401 → logout.

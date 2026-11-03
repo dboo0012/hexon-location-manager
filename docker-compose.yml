@@ -6,15 +6,31 @@ services:
       POSTGRES_PASSWORD: hexon
       POSTGRES_DB: hexon_locations
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+      # Creates the separate database used by the backend test suite.
       - ./backend/db-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U hexon -d hexon_locations"]
       interval: 5s
       timeout: 5s
       retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgres://hexon:hexon@db:5432/hexon_locations
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-please}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+    ports:
+      - "${API_PORT:-4000}:4000"
+    restart: unless-stopped
 
 volumes:
   db-data:
