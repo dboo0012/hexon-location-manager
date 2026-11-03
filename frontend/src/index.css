@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #eef2f0;
+  --color-contour: #c9d6cf;
+  --color-ink: #1d2a33;
+  --color-ink-soft: #4a5a64;
+  --color-cobalt: #2a4bd7;
+  --color-cobalt-deep: #1f3aae;
+  --color-survey: #f2c14e;
+  --color-danger: #c2412d;
+  --color-success: #2f7d4f;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-stretch: 87.5%;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-cobalt);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Coordinates line up digit-for-digit without resorting to a monospace face. */
+  .coords {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Topographic contour lines: the one decorative motif, used behind auth and upload. */
+  .contours {
+    background-color: var(--color-paper);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='560' viewBox='0 0 560 560' fill='none' stroke='%23c9d6cf' stroke-width='1.2'%3E%3Cpath d='M-20 120c80-60 160 40 240-10s150-90 230-20 140 40 140 40'/%3E%3Cpath d='M-20 160c90-50 150 50 240 0s160-80 230-10 140 50 140 50'/%3E%3Cpath d='M-20 205c95-40 150 55 245 5s165-70 225 0 140 55 140 55'/%3E%3Cpath d='M-20 250c100-30 150 60 250 10s170-60 220 10 140 60 140 60'/%3E%3Cellipse cx='300' cy='400' rx='70' ry='38'/%3E%3Cellipse cx='300' cy='400' rx='120' ry='70'/%3E%3Cellipse cx='300' cy='400' rx='175' ry='105'/%3E%3Cellipse cx='300' cy='400' rx='235' ry='140'/%3E%3Cellipse cx='300' cy='400' rx='30' ry='14'/%3E%3C/svg%3E");
+    background-size: 560px 560px;
+  }
+
+  .field {
+    @apply w-full rounded-md border border-contour bg-white px-3 py-2 text-ink placeholder:text-ink-soft/60 transition-colors focus:border-cobalt focus:outline-none focus:ring-2 focus:ring-cobalt/25 aria-invalid:border-danger;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-cobalt px-4 py-2 font-semibold text-white transition-colors hover:bg-cobalt-deep disabled:cursor-not-allowed disabled:opacity-60;
+  }
+}
+
+/* Leaflet popups in the app's type. */
+.leaflet-container {
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

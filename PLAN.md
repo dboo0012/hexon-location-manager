@@ -74,7 +74,7 @@ Every location query filters by `user_id = req.user.id` taken from the verified 
 - [x] **B6 Docker** — multi-stage `backend/Dockerfile`, compose `backend` service depending on healthy postgres; verify `docker compose up` serves `/api/health`.
 
 ### Frontend
-- [ ] **F1 Scaffold** — Vite React TS, Tailwind v4, react-router, zustand, react-leaflet + leaflet CSS + marker icon fix, API client with bearer token + 401 → logout.
+- [x] **F1 Scaffold** — Vite React TS, Tailwind v4, react-router, zustand, react-leaflet + leaflet CSS + marker icon fix, API client with bearer token + 401 → logout.
 - [ ] **F2 Auth pages** — Register + Login forms with validation/error display; auth store persisted to localStorage; `ProtectedRoute` redirects to `/login` (and back after login); logged-in users visiting `/login` go to `/map`.
 - [ ] **F3 Layout** — sidebar (Map, Upload, user email, Logout), responsive (collapsible on mobile).
 - [ ] **F4 Map page** — load user's locations, form (name/lat/lng) with validation, optimistic-free instant add from POST response, markers with Popup showing name, fly to new marker, list of locations.
