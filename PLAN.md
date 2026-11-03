@@ -69,7 +69,7 @@ Every location query filters by `user_id = req.user.id` taken from the verified 
 - [x] **B1 Scaffold** — root `.gitignore`, `docker-compose.yml` (postgres 16 on 5432 with healthcheck), `backend/` package (TS, express, tsx, vitest), `.env.example`.
 - [x] **B2 DB layer** — pg Pool, SQL migrations runner (`schema_migrations` table), `001_init.sql`; runs on server boot and in tests.
 - [x] **B3 Auth** — register/login/me, bcryptjs hashing, JWT (HS256, configurable expiry), `requireAuth` middleware, zod validation, central error handler. Tests: register, duplicate email 409, bad login 401, missing/invalid token 401.
-- [ ] **B4 Locations CRUD** — GET/POST scoped by user. Tests incl. **user isolation** (A adds 5, B sees 0) and coordinate validation.
+- [x] **B4 Locations CRUD** — GET/POST scoped by user. Tests incl. **user isolation** (A adds 5, B sees 0) and coordinate validation.
 - [ ] **B5 ZIP upload** — multer memory storage (size limit), validate ZIP has exactly one file entry and it is `.txt` (directory-only entries ignored), parse rows (optional header, trims, name may contain commas → last two fields are coords), validate ranges, insert in one transaction. Unit tests for the parser + integration tests for valid / multi-file / non-txt / not-a-zip / malformed rows / empty file.
 - [ ] **B6 Docker** — multi-stage `backend/Dockerfile`, compose `backend` service depending on healthy postgres; verify `docker compose up` serves `/api/health`.
 

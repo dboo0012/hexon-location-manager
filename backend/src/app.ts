@@ -5,6 +5,7 @@ import { config } from "./config.js";
 import { checkDatabase } from "./db/pool.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { authRouter } from "./routes/auth.js";
+import { locationsRouter } from "./routes/locations.js";
 
 export function createApp() {
   const app = express();
@@ -21,6 +22,7 @@ export function createApp() {
   });
 
   app.use("/api/auth", authRouter);
+  app.use("/api/locations", locationsRouter);
 
   app.use(notFound);
   app.use(errorHandler);
