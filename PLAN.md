@@ -81,7 +81,7 @@ Every location query filters by `user_id = req.user.id` taken from the verified 
 - [x] **F5 Upload page** — drag & drop / picker for `.zip`, client-side extension check, success modal 3 s then locations merged into store, error modal 3 s with the server's message.
 
 ### Wrap-up
-- [ ] **W1 Samples** — `samples/` with valid ZIP, multi-file ZIP, non-txt ZIP, malformed ZIP + a script that regenerates them.
+- [x] **W1 Samples** — `samples/` with valid ZIP, multi-file ZIP, non-txt ZIP, malformed ZIP + a script that regenerates them.
 - [ ] **W2 End-to-end check** — run the full stack, exercise every requirement in a browser (two users, isolation, upload success + error popups timing), fix what breaks.
 - [ ] **W3 README** — overview, stack, prerequisites, quick start (docker compose + dev servers), env vars, API reference, upload format, testing, project structure, design decisions.
 
