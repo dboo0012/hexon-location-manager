@@ -2,9 +2,10 @@ import { Navigate, Route, Routes } from "react-router";
 import { AppLayout } from "./components/AppLayout";
 import { GuestRoute, ProtectedRoute } from "./components/RouteGuards";
 import LoginPage from "./pages/LoginPage";
+import MapPage from "./pages/MapPage";
 import RegisterPage from "./pages/RegisterPage";
 
-// Map and Upload are filled in by later tasks (F3–F5).
+// Upload is filled in by task F5.
 function Placeholder({ title }: { title: string }) {
   return (
     <main className="grid min-h-full place-items-center p-6">
@@ -22,7 +23,7 @@ export default function App() {
       </Route>
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/map" element={<Placeholder title="Map" />} />
+          <Route path="/map" element={<MapPage />} />
           <Route path="/upload" element={<Placeholder title="Upload" />} />
         </Route>
       </Route>

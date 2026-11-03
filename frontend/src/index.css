@@ -79,3 +79,27 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Map pins: a divIcon, so strip Leaflet's default white box. */
+.leaflet-div-icon.pin {
+  background: none;
+  border: none;
+}
+
+/* A newly added pin drops in once, answering the user's "Add to map". */
+.pin--new svg {
+  transform-origin: 50% 100%;
+  animation: pin-drop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.25);
+  filter: drop-shadow(0 0 6px rgba(242, 193, 78, 0.9));
+}
+
+@keyframes pin-drop {
+  from {
+    transform: translateY(-18px) scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
