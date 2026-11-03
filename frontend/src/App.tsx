@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router";
+import { AppLayout } from "./components/AppLayout";
 import { GuestRoute, ProtectedRoute } from "./components/RouteGuards";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -20,8 +21,10 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
       </Route>
       <Route element={<ProtectedRoute />}>
-        <Route path="/map" element={<Placeholder title="Map" />} />
-        <Route path="/upload" element={<Placeholder title="Upload" />} />
+        <Route element={<AppLayout />}>
+          <Route path="/map" element={<Placeholder title="Map" />} />
+          <Route path="/upload" element={<Placeholder title="Upload" />} />
+        </Route>
       </Route>
       <Route path="*" element={<Navigate to="/map" replace />} />
     </Routes>
