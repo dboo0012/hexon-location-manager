@@ -91,3 +91,7 @@ Every location query filters by `user_id = req.user.id` taken from the verified 
 - **Raw SQL + tiny migration runner over an ORM**: two tables; keeps the data-scoping logic visible to reviewers.
 - **Upload is persisted server-side immediately**; the frontend waits for the 3 s confirmation popup to close, then merges the returned locations into the map store (matches "popup for three seconds, then automatically add").
 - **Bad rows reject the whole upload** (400 with line numbers) rather than partially importing — predictable for the user.
+- **After the upload popup closes the app opens the map** so the newly added markers are visible; if the user navigates away during the 3 s the places are still merged into the map state.
+- **OpenStreetMap tiles** instead of CARTO (CARTO basemaps now require an API key).
+- **Visual direction**: "survey map" palette (paper `#eef2f0`, ink `#1d2a33`, cobalt `#2a4bd7`, survey yellow `#f2c14e`), one typeface (Archivo, semi-condensed headings, tabular figures for coordinates), contour-line motif only on auth/upload screens.
+- **E2E suite (Playwright)** is committed so reviewers can re-run the full requirement walkthrough.
