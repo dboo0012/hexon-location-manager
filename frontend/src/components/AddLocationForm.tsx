@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useLocationStore } from "../store/locationStore";
 import {
   type LocationFormErrors,
@@ -19,11 +19,15 @@ export function AddLocationForm({ picked }: { picked: { lat: number; lng: number
   const [saved, setSaved] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!picked) return;
-    setValues((v) => ({ ...v, latitude: picked.lat.toFixed(6), longitude: picked.lng.toFixed(6) }));
-    setErrors((e) => ({ ...e, latitude: undefined, longitude: undefined }));
-  }, [picked]);
+  // A new map click overwrites the coordinate fields (adjusting state during render, not in an effect).
+  const [lastPicked, setLastPicked] = useState(picked);
+  if (picked !== lastPicked) {
+    setLastPicked(picked);
+    if (picked) {
+      setValues((v) => ({ ...v, latitude: picked.lat.toFixed(6), longitude: picked.lng.toFixed(6) }));
+      setErrors((e) => ({ ...e, latitude: undefined, longitude: undefined }));
+    }
+  }
 
   const set = (field: keyof LocationFormValues) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setValues((v) => ({ ...v, [field]: e.target.value }));

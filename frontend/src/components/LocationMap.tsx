@@ -73,7 +73,7 @@ export function LocationMap({ locations, focusId, onPick }: Props) {
         </Marker>
       ))}
       <FitOnLoad locations={locations} />
-      <FlyToFocus locations={locations} focusId={focusId} markers={markerRefs.current} />
+      <FlyToFocus locations={locations} focusId={focusId} markers={markerRefs} />
       <ClickToPick onPick={onPick} />
     </MapContainer>
   );
@@ -106,7 +106,7 @@ function FlyToFocus({
 }: {
   locations: Location[];
   focusId: number | null;
-  markers: Map<number, L.Marker>;
+  markers: React.RefObject<Map<number, L.Marker>>;
 }) {
   const map = useMap();
   const lastFocus = useRef<number | null>(focusId);
@@ -116,7 +116,7 @@ function FlyToFocus({
     const loc = locations.find((l) => l.id === focusId);
     if (!loc) return;
     map.flyTo([loc.latitude, loc.longitude], Math.max(map.getZoom(), 13), { duration: 0.8 });
-    map.once("moveend", () => markers.get(focusId)?.openPopup());
+    map.once("moveend", () => markers.current.get(focusId)?.openPopup());
   }, [focusId, locations, map, markers]);
   return null;
 }

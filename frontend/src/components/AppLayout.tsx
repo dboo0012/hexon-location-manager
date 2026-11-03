@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { NavLink, Outlet, useNavigate } from "react-router";
 import { useAuthStore } from "../store/authStore";
 import { useLocationStore } from "../store/locationStore";
 import { Logo } from "./Logo";
@@ -27,16 +27,12 @@ export function AppLayout() {
   const status = useLocationStore((s) => s.status);
   const load = useLocationStore((s) => s.load);
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
   // Locations are loaded once per session and shared by every page.
   useEffect(() => {
     if (status === "idle") void load();
   }, [status, load]);
-
-  // Close the mobile drawer after navigating.
-  useEffect(() => setOpen(false), [pathname]);
 
   function handleLogout() {
     logout();
@@ -75,6 +71,7 @@ export function AppLayout() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-md px-3 py-2.5 font-medium transition-colors ${
                   isActive ? "bg-white text-ink" : "text-white/80 hover:bg-white/10 hover:text-white"

@@ -78,7 +78,7 @@ Every location query filters by `user_id = req.user.id` taken from the verified 
 - [x] **F2 Auth pages** — Register + Login forms with validation/error display; auth store persisted to localStorage; `ProtectedRoute` redirects to `/login` (and back after login); logged-in users visiting `/login` go to `/map`.
 - [x] **F3 Layout** — sidebar (Map, Upload, user email, Logout), responsive (collapsible on mobile).
 - [x] **F4 Map page** — load user's locations, form (name/lat/lng) with validation, optimistic-free instant add from POST response, markers with Popup showing name, fly to new marker, list of locations.
-- [ ] **F5 Upload page** — drag & drop / picker for `.zip`, client-side extension check, success modal 3 s then locations merged into store, error modal 3 s with the server's message.
+- [x] **F5 Upload page** — drag & drop / picker for `.zip`, client-side extension check, success modal 3 s then locations merged into store, error modal 3 s with the server's message.
 
 ### Wrap-up
 - [ ] **W1 Samples** — `samples/` with valid ZIP, multi-file ZIP, non-txt ZIP, malformed ZIP + a script that regenerates them.

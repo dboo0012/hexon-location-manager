@@ -103,3 +103,31 @@
     opacity: 1;
   }
 }
+
+/* Timed popup: a short entrance, and a bar that drains over the popup's lifetime. */
+.popup-enter {
+  animation: popup-in 180ms ease-out;
+}
+
+.popup-timer {
+  transform-origin: left;
+  animation-name: popup-drain;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes popup-in {
+  from {
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+  }
+}
+
+@keyframes popup-drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}

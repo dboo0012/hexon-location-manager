@@ -4,15 +4,7 @@ import { GuestRoute, ProtectedRoute } from "./components/RouteGuards";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
 import RegisterPage from "./pages/RegisterPage";
-
-// Upload is filled in by task F5.
-function Placeholder({ title }: { title: string }) {
-  return (
-    <main className="grid min-h-full place-items-center p-6">
-      <h1 className="text-3xl font-bold">{title}</h1>
-    </main>
-  );
-}
+import UploadPage from "./pages/UploadPage";
 
 export default function App() {
   return (
@@ -24,7 +16,7 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/map" element={<MapPage />} />
-          <Route path="/upload" element={<Placeholder title="Upload" />} />
+          <Route path="/upload" element={<UploadPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/map" replace />} />
