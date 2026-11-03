@@ -83,7 +83,7 @@ Every location query filters by `user_id = req.user.id` taken from the verified 
 ### Wrap-up
 - [x] **W1 Samples** — `samples/` with valid ZIP, multi-file ZIP, non-txt ZIP, malformed ZIP + a script that regenerates them.
 - [x] **W2 End-to-end check** — run the full stack, exercise every requirement in a browser (two users, isolation, upload success + error popups timing), fix what breaks.
-- [ ] **W3 README** — overview, stack, prerequisites, quick start (docker compose + dev servers), env vars, API reference, upload format, testing, project structure, design decisions.
+- [x] **W3 README** — overview, stack, prerequisites, quick start (docker compose + dev servers), env vars, API reference, upload format, testing, project structure, design decisions.
 
 ## Decisions
 
