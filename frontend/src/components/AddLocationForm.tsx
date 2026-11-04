@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from "react";
+import type { LatLng } from "./LocationMap";
 import { useLocationStore } from "../store/locationStore";
 import {
   type LocationFormErrors,
@@ -10,8 +11,15 @@ import { FormField } from "./FormField";
 
 const EMPTY: LocationFormValues = { name: "", latitude: "", longitude: "" };
 
-/** Name / latitude / longitude form. `picked` pre-fills coordinates from a map click. */
-export function AddLocationForm({ picked }: { picked: { lat: number; lng: number } | null }) {
+interface Props {
+  /** Coordinates picked on the map; they overwrite the coordinate fields whenever they change. */
+  picked: LatLng | null;
+  picking: boolean;
+  onPickingChange: (picking: boolean) => void;
+}
+
+/** Name / latitude / longitude form, with a "Pick on map" mode that follows a ghost pin. */
+export function AddLocationForm({ picked, picking, onPickingChange }: Props) {
   const add = useLocationStore((s) => s.add);
   const [values, setValues] = useState<LocationFormValues>(EMPTY);
   const [errors, setErrors] = useState<LocationFormErrors>({});
@@ -19,7 +27,7 @@ export function AddLocationForm({ picked }: { picked: { lat: number; lng: number
   const [saved, setSaved] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // A new map click overwrites the coordinate fields (adjusting state during render, not in an effect).
+  // A new pick overwrites the coordinate fields (adjusting state during render, not in an effect).
   const [lastPicked, setLastPicked] = useState(picked);
   if (picked !== lastPicked) {
     setLastPicked(picked);
@@ -32,6 +40,8 @@ export function AddLocationForm({ picked }: { picked: { lat: number; lng: number
   const set = (field: keyof LocationFormValues) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setValues((v) => ({ ...v, [field]: e.target.value }));
     setSaved(null);
+    // Typing coordinates by hand takes over from the pin.
+    if (field !== "name" && picking) onPickingChange(false);
   };
 
   async function handleSubmit(event: FormEvent) {
@@ -48,6 +58,7 @@ export function AddLocationForm({ picked }: { picked: { lat: number; lng: number
       const location = await add(result.input);
       setValues(EMPTY);
       setSaved(location.name);
+      onPickingChange(false);
     } catch (err) {
       setServerError((err as Error).message);
     } finally {
@@ -89,7 +100,28 @@ export function AddLocationForm({ picked }: { picked: { lat: number; lng: number
           placeholder="101.712198"
         />
       </div>
-      <p className="text-sm text-ink-soft">Or click the map to fill in the coordinates.</p>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          aria-pressed={picking}
+          onClick={() => onPickingChange(!picking)}
+          className={`btn-pick ${picking ? "btn-pick--on" : ""}`}
+        >
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+            <path
+              d="M10 1.5c-3.3 0-6 2.5-6 5.8 0 4.3 6 11.2 6 11.2s6-6.9 6-11.2c0-3.3-2.7-5.8-6-5.8z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            />
+            <circle cx="10" cy="7.3" r="2.2" fill="currentColor" />
+          </svg>
+          {picking ? "Done" : "Pick on map"}
+        </button>
+        <p className="text-sm text-ink-soft">
+          {picking ? "Drag the map to move the pin." : "Or click anywhere on the map."}
+        </p>
+      </div>
       <button type="submit" className="btn-primary w-full" disabled={saving}>
         {saving ? "Adding…" : "Add to map"}
       </button>

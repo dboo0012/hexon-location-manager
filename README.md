@@ -53,7 +53,8 @@ database. Running locally or with Docker uses PostgreSQL, as the brief specifies
 - Form for name, latitude and longitude. It validates input in the browser and again on the server.
 - A new place appears as a marker immediately, without a page reload, and the map flies to it.
 - Clicking a marker shows the place's name (and its coordinates).
-- Extras: click the map to fill in the coordinates, and a list of your places that jumps to each one.
+- Extras: **Pick on map**, where a ghosted pin sits at the centre of the map and the coordinate
+  fields follow it as you drag the map, and a list of your places that jumps to each one.
 
 **File upload**
 - Upload a `.zip` that contains exactly one `.txt` file.
@@ -130,7 +131,9 @@ Frontend (`frontend/.env`, optional, see [`frontend/.env.example`](frontend/.env
 1. **Register** with an email and a password of at least 8 characters. You are signed in and taken to the map.
 2. On the **Map**, enter a name, latitude and longitude (for example `Suria KLCC`, `3.157324409`,
    `101.7121981`) and press **Add to map**. The marker appears straight away; click it to see the name.
-   You can also click anywhere on the map to fill in the coordinates.
+   Or press **Pick on map** (or click anywhere on the map): a ghosted pin appears at the centre of
+   the map, and the latitude and longitude follow it as you drag. Typing coordinates by hand, or
+   adding the place, puts the pin away.
 3. On **Upload file**, choose or drop a `.zip` and press **Upload and add to map**.
 4. Use **Log out** in the sidebar. Sign in as a different user and you will see only that user's places.
 

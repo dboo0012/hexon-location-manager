@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AddLocationForm } from "../components/AddLocationForm";
-import { LocationMap } from "../components/LocationMap";
+import { type LatLng, LocationMap } from "../components/LocationMap";
 import { formatCoord } from "../lib/validateLocation";
 import { useLocationStore } from "../store/locationStore";
 
@@ -10,7 +10,8 @@ export default function MapPage() {
   const error = useLocationStore((s) => s.error);
   const focusId = useLocationStore((s) => s.focusId);
   const load = useLocationStore((s) => s.load);
-  const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
+  const [picked, setPicked] = useState<LatLng | null>(null);
+  const [picking, setPicking] = useState(false);
 
   // Re-focusing an existing place reuses the store's focus mechanism.
   const focus = (id: number) => useLocationStore.setState({ focusId: id });
@@ -18,12 +19,19 @@ export default function MapPage() {
   return (
     <div className="flex h-full flex-col lg:block">
       <section aria-label="Map" className="relative h-[55vh] lg:absolute lg:inset-0 lg:h-auto">
-        <LocationMap locations={locations} focusId={focusId} onPick={setPicked} />
+        <LocationMap
+          locations={locations}
+          focusId={focusId}
+          picking={picking}
+          picked={picked}
+          onPick={setPicked}
+          onStartPicking={() => setPicking(true)}
+        />
       </section>
 
       <aside className="z-[1000] flex min-h-0 flex-col overflow-y-auto border-t border-contour bg-white lg:absolute lg:top-4 lg:left-4 lg:max-h-[calc(100%-2rem)] lg:w-80 lg:rounded-lg lg:border lg:shadow-[0_12px_32px_-12px_rgba(29,42,51,0.35)]">
         <div className="p-5">
-          <AddLocationForm picked={picked} />
+          <AddLocationForm picked={picked} picking={picking} onPickingChange={setPicking} />
         </div>
 
         <div className="border-t border-contour p-5 pt-4">

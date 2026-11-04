@@ -64,6 +64,14 @@
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-md bg-cobalt px-4 py-2 font-semibold text-white transition-colors hover:bg-cobalt-deep disabled:cursor-not-allowed disabled:opacity-60;
   }
+
+  /* "Pick on map" toggle: outlined when off, survey-yellow when the ghost pin is out. */
+  .btn-pick {
+    @apply inline-flex shrink-0 items-center gap-1.5 rounded-md border border-contour bg-white px-3 py-1.5 text-sm font-semibold text-cobalt transition-colors hover:border-cobalt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt/40;
+  }
+  .btn-pick--on {
+    @apply border-survey bg-survey/30 text-ink hover:border-ink;
+  }
 }
 
 /* Leaflet popups in the app's type. */
@@ -102,6 +110,54 @@
     transform: none;
     opacity: 1;
   }
+}
+
+/* Picking: a ghosted pin fixed at the map centre. The map moves under it; its tip is the pick. */
+.ghost-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 650; /* above markers (600), below popups (700) and controls */
+  pointer-events: none;
+}
+.ghost-pin__icon {
+  position: absolute;
+  left: -16px;
+  top: -39px;
+  opacity: 0.6;
+  transition: transform 160ms ease-out, opacity 160ms ease-out;
+}
+.ghost-pin__icon svg {
+  display: block;
+  filter: drop-shadow(0 4px 6px rgba(29, 42, 51, 0.35));
+}
+/* The spot on the ground the tip points at. */
+.ghost-pin__shadow {
+  position: absolute;
+  left: -6px;
+  top: -3px;
+  width: 12px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(29, 42, 51, 0.35);
+}
+.ghost-pin__coords {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink);
+  font-size: 12px;
+  box-shadow: 0 1px 4px rgba(29, 42, 51, 0.25);
+}
+/* While the map is dragged the pin lifts off the ground, and settles when it stops. */
+.ghost-pin--moving .ghost-pin__icon {
+  transform: translateY(-10px);
+  opacity: 0.45;
 }
 
 /* Timed popup: a short entrance, and a bar that drains over the popup's lifetime. */

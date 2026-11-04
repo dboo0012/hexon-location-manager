@@ -1,6 +1,7 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useLocationStore } from "../store/locationStore";
+import { mapStub } from "../test/reactLeafletMock";
 import { json, renderApp, signIn } from "../test/utils";
 
 vi.mock("react-leaflet", async () => (await import("../test/reactLeafletMock")).reactLeafletMock);
@@ -11,6 +12,7 @@ const KLCC = { id: 1, name: "Suria KLCC", latitude: 3.157324409, longitude: 101.
 beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
   useLocationStore.getState().clear();
+  mapStub.reset();
   signIn();
 });
 afterEach(() => {
@@ -103,5 +105,67 @@ describe("map page", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Marker: Suria KLCC" })).toBeInTheDocument(),
     );
+  });
+
+  describe("picking on the map", () => {
+    async function openMap() {
+      fetchMock.mockResolvedValueOnce(json(200, { locations: [] }));
+      const result = renderApp("/map");
+      await screen.findByText(/No places yet/);
+      return result;
+    }
+
+    it("shows a ghost pin at the map centre and fills in its coordinates", async () => {
+      const { user } = await openMap();
+      expect(screen.queryByTestId("ghost-pin")).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Pick on map" }));
+
+      expect(screen.getByTestId("ghost-pin")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Done" })).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByLabelText("Latitude")).toHaveValue("3.139000");
+      expect(screen.getByLabelText("Longitude")).toHaveValue("101.686900");
+    });
+
+    it("updates the coordinates as the map is dragged", async () => {
+      const { user } = await openMap();
+      await user.click(screen.getByRole("button", { name: "Pick on map" }));
+
+      act(() => mapStub.panTo({ lat: 3.2105416, lng: 101.75920504 }));
+
+      expect(screen.getByLabelText("Latitude")).toHaveValue("3.210542");
+      expect(screen.getByLabelText("Longitude")).toHaveValue("101.759205");
+      expect(screen.getByTestId("ghost-pin")).toHaveTextContent("3.210542, 101.759205");
+    });
+
+    it("starts picking where the map is clicked", async () => {
+      await openMap();
+      act(() => mapStub.click({ lat: -33.8568, lng: 151.2153 }));
+
+      expect(screen.getByTestId("ghost-pin")).toBeInTheDocument();
+      expect(screen.getByLabelText("Latitude")).toHaveValue("-33.856800");
+      expect(screen.getByLabelText("Longitude")).toHaveValue("151.215300");
+    });
+
+    it("stops following the map when coordinates are typed, or after adding", async () => {
+      const { user } = await openMap();
+      await user.click(screen.getByRole("button", { name: "Pick on map" }));
+      await user.clear(screen.getByLabelText("Latitude"));
+      await user.type(screen.getByLabelText("Latitude"), "1.5");
+
+      expect(screen.queryByTestId("ghost-pin")).not.toBeInTheDocument();
+      act(() => mapStub.panTo({ lat: 10, lng: 10 }));
+      expect(screen.getByLabelText("Latitude")).toHaveValue("1.5");
+
+      await user.click(screen.getByRole("button", { name: "Pick on map" }));
+      const place = { id: 3, name: "Pinned", latitude: 10, longitude: 10, createdAt: "" };
+      fetchMock.mockResolvedValueOnce(json(201, { location: place }));
+      await user.type(screen.getByLabelText("Name"), "Pinned");
+      await user.click(screen.getByRole("button", { name: "Add to map" }));
+
+      await screen.findByRole("button", { name: "Marker: Pinned" });
+      expect(screen.queryByTestId("ghost-pin")).not.toBeInTheDocument();
+      expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ latitude: 10, longitude: 10 });
+    });
   });
 });
