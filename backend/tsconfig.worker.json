@@ -1,0 +1,8 @@
+{
+  // Type-checks the Cloudflare Worker entrypoint against the generated runtime types
+  // (worker-configuration.d.ts, produced by `wrangler types`). Run via `npm run typecheck`.
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "types": ["node"] },
+  "include": ["src", "worker-configuration.d.ts"],
+  "exclude": []
+}

@@ -1,0 +1,4 @@
+# Local secrets for `npm run cf:dev` (wrangler dev). Copy to .dev.vars.
+# When .dev.vars exists, wrangler ignores .env, so the Postgres settings there are not used.
+JWT_SECRET=local-worker-dev-secret-change-me
+CORS_ORIGIN=http://localhost:8787

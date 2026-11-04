@@ -1,0 +1,41 @@
+// Cloudflare deployment: one Worker serves the built React app (static assets) and runs the
+// same Express API against Cloudflare D1. The Docker image / Node server use PostgreSQL instead.
+// Deploy with `npm run deploy` (see README > Deploying to Cloudflare).
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "hexon-waypoints",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Every custom domain must be listed here: `wrangler deploy` replaces the Worker's
+  // custom-domain set with exactly this list.
+  "routes": [{ "pattern": "waypoints.darylboon.me", "custom_domain": true }],
+
+  // The frontend build. Browser navigations fall back to index.html (client-side routing);
+  // only /api/* runs the Worker.
+  "assets": {
+    "directory": "../frontend/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hexon-locations",
+      "database_id": "bbbbed94-eb95-493a-938b-6d9434585aa6",
+      "migrations_dir": "migrations-d1",
+    },
+  ],
+
+  // Non-secret config, read through process.env like the Node server.
+  // JWT_SECRET is a secret: `.dev.vars` locally, `wrangler secret put JWT_SECRET` in production.
+  "vars": {
+    "NODE_ENV": "production",
+    "CORS_ORIGIN": "https://waypoints.darylboon.me",
+    "JWT_EXPIRES_IN": "7d",
+  },
+
+  "observability": { "enabled": true },
+}

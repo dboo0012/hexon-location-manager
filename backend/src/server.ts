@@ -1,12 +1,15 @@
+// Load .env before any module reads process.env (imports are evaluated in order).
+import "dotenv/config";
 import { createApp } from "./app.js";
 import { config } from "./config.js";
 import { migrate } from "./db/migrate.js";
+import { createPgStore } from "./db/pgStore.js";
 import { pool } from "./db/pool.js";
 
 async function main() {
   await migrate(pool, (msg) => console.log(msg));
 
-  const app = createApp();
+  const app = createApp(createPgStore(pool));
   const server = app.listen(config.PORT, () => {
     console.log(`API listening on http://localhost:${config.PORT}`);
   });

@@ -4,6 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
  * End-to-end tests drive the real app against the real API and database.
  * Prerequisite: `docker compose up -d` (Postgres + API on :4000) from the repo root.
  * The Vite dev server is started automatically if it is not already running.
+ * To test a deployed copy instead, set E2E_BASE_URL (e.g. https://waypoints.darylboon.me).
  */
 export default defineConfig({
   testDir: "./e2e",
@@ -18,10 +19,12 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"] }, grepInvert: /@mobile/ },
     { name: "mobile", use: { ...devices["Pixel 7"] }, grep: /@mobile/ },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: "http://localhost:5173",
-    reuseExistingServer: true,
-    timeout: 60_000,
-  },
+  webServer: process.env.E2E_BASE_URL
+    ? undefined
+    : {
+        command: "npm run dev",
+        url: "http://localhost:5173",
+        reuseExistingServer: true,
+        timeout: 60_000,
+      },
 });

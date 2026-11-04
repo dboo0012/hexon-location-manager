@@ -6,10 +6,12 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.build.json && node scripts/copy-migrations.mjs",
     "start": "node dist/server.js",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && wrangler types && tsc -p tsconfig.worker.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "samples": "node scripts/make-samples.mjs"
+    "samples": "node scripts/make-samples.mjs",
+    "cf:dev": "npm --prefix ../frontend run build && wrangler d1 migrations apply hexon-locations --local && wrangler dev",
+    "deploy": "npm --prefix ../frontend run build && wrangler d1 migrations apply hexon-locations --remote && wrangler deploy"
   },
   "type": "module",
   "dependencies": {
@@ -33,10 +35,12 @@
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
+    "miniflare": "^4.20260730.0",
     "supertest": "^7.3.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "wrangler": "^4.157.0"
   },
   "private": true,
   "engines": {

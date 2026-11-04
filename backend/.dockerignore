@@ -6,3 +6,7 @@ coverage
 *.log
 Dockerfile
 .dockerignore
+.wrangler
+.dev.vars
+worker-configuration.d.ts
+migrations-d1

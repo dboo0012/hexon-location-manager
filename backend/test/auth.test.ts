@@ -2,12 +2,12 @@ import jwt from "jsonwebtoken";
 import request from "supertest";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
-import { pool, registerUser, resetDatabase } from "./helpers.js";
+import { closeDatabase, query, registerUser, resetDatabase, store } from "./helpers.js";
 
-const app = createApp();
+const app = createApp(store);
 
 beforeEach(resetDatabase);
-afterAll(() => pool.end());
+afterAll(closeDatabase);
 
 describe("POST /api/auth/register", () => {
   it("creates a user with a hashed password and returns a token", async () => {
@@ -18,7 +18,7 @@ describe("POST /api/auth/register", () => {
     expect(res.body.user).toEqual({ id: expect.any(Number), email: "alice@example.com" });
     expect(typeof res.body.token).toBe("string");
 
-    const { rows } = await pool.query("SELECT password_hash FROM users");
+    const rows = await query<{ password_hash: string }>("SELECT password_hash FROM users");
     expect(rows[0].password_hash).not.toBe("password123");
   });
 

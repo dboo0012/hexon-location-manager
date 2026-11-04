@@ -1,12 +1,12 @@
 import request from "supertest";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
-import { pool, registerUser, resetDatabase } from "./helpers.js";
+import { closeDatabase, registerUser, resetDatabase, store } from "./helpers.js";
 
-const app = createApp();
+const app = createApp(store);
 
 beforeEach(resetDatabase);
-afterAll(() => pool.end());
+afterAll(closeDatabase);
 
 const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
 

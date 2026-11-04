@@ -6,14 +6,18 @@ clickable marker on an interactive map.
 
 Built for the Hexon *Full Stack Location Management Application* technical assessment.
 
+**Live demo: <https://waypoints.darylboon.me>** (register any email to try it). The demo runs on
+Cloudflare: one Worker serves the frontend and the same Express API, with Cloudflare D1 as the
+database. Running locally or with Docker uses PostgreSQL, as the brief specifies.
+
 | Area | Choice |
 |---|---|
 | Frontend | React 19 + Vite, TypeScript, Tailwind CSS v4, react-router, Zustand |
 | Map | react-leaflet (Leaflet) with OpenStreetMap tiles |
 | Backend | Node.js + Express 5, TypeScript |
-| Database | PostgreSQL 16 |
+| Database | PostgreSQL 16 (local / Docker); Cloudflare D1 for the hosted demo |
 | Auth | JWT (HS256) with bcrypt-hashed passwords |
-| Tests | Vitest + Supertest (API, real Postgres), Vitest + Testing Library (UI), Playwright (end to end) |
+| Tests | Vitest + Supertest (API, on real Postgres and on D1), Vitest + Testing Library (UI), Playwright (end to end) |
 | Bonus | Dockerized backend (multi-stage image) and `docker compose` for API + database |
 
 ---
@@ -28,6 +32,7 @@ Built for the Hexon *Full Stack Location Management Application* technical asses
 - [Upload file format](#upload-file-format)
 - [API reference](#api-reference)
 - [Testing](#testing)
+- [Deploying to Cloudflare](#deploying-to-cloudflare)
 - [Project structure](#project-structure)
 - [Design decisions](#design-decisions)
 
@@ -189,9 +194,10 @@ All test suites need the database running: `docker compose up -d db`. The backen
 separate `hexon_locations_test` database, which the container creates on first start.
 
 ```bash
-# Backend: API integration tests against real PostgreSQL + unit tests for the file parser
+# Backend: the API integration suite runs twice, against real PostgreSQL and against D1
+# (in-memory, via Miniflare), plus unit tests for the file parser
 cd backend && npm test
-
+npm test -- --project pg         # or just one database
 # Frontend: component and store tests (jsdom; react-leaflet is stubbed)
 cd frontend && npm test
 
@@ -199,6 +205,9 @@ cd frontend && npm test
 docker compose up -d --build     # API + DB
 cd frontend && npx playwright install chromium   # first time only
 npm run test:e2e                 # starts the Vite dev server if needed
+
+# The same end-to-end suite against a deployed copy
+E2E_BASE_URL=https://waypoints.darylboon.me npm run test:e2e
 ```
 
 The end-to-end suite walks through every requirement in the brief:
@@ -209,7 +218,36 @@ The end-to-end suite walks through every requirement in the brief:
 - the 3-second success and error popups for every sample ZIP;
 - the mobile menu.
 
-Type-checking and linting: `npm run typecheck` (backend), `npm run build` / `npm run lint` (frontend).
+Type-checking and linting: `npm run typecheck` (backend: the Node code, then the Worker entrypoint
+against generated Cloudflare types), `npm run build` / `npm run lint` (frontend).
+
+## Deploying to Cloudflare
+
+The hosted demo is a single Cloudflare Worker (`backend/wrangler.jsonc`):
+- **Static assets:** the Vite build in `frontend/dist`. Page navigations fall back to
+  `index.html` so client-side routes like `/map` work, and the frontend calls the API on the same
+  origin, so no CORS or `VITE_API_URL` is needed.
+- **`/api/*`:** runs `backend/src/worker.ts`, which starts the *same* Express app as
+  `server.ts` (through Cloudflare's `node:http` support) but hands it a D1-backed store instead of
+  the PostgreSQL one. Routes, validation, auth and the ZIP parser are shared.
+- **Database:** Cloudflare D1 (SQLite). Its schema, `backend/migrations-d1/0001_init.sql`, mirrors
+  the PostgreSQL one: case-insensitive unique emails, cascading deletes and the same `CHECK`
+  constraints. Bulk uploads run as one D1 batch, which is a single transaction.
+
+```bash
+cd backend
+npx wrangler login                 # once
+npx wrangler d1 create hexon-locations   # once; put the id in wrangler.jsonc
+npx wrangler secret put JWT_SECRET       # once; any long random string
+npm run deploy    # builds the frontend, applies D1 migrations, deploys the Worker
+
+# Local preview of the Worker (local D1, http://localhost:8787)
+cp .dev.vars.example .dev.vars
+npm run cf:dev
+```
+
+Change the custom domain in `wrangler.jsonc` (`routes`) and `CORS_ORIGIN` to deploy under your
+own domain.
 
 ## Project structure
 
@@ -219,13 +257,16 @@ Type-checking and linting: `npm run typecheck` (backend), `npm run build` / `npm
 ├── samples/                  example upload files (valid + each error case)
 ├── backend/
 │   ├── Dockerfile            multi-stage build → small runtime image
+│   ├── wrangler.jsonc        Cloudflare Worker config (assets + API + D1)
+│   ├── migrations-d1/        D1 (SQLite) schema for the Cloudflare deployment
 │   ├── db-init/              creates the test database on first DB start
 │   ├── scripts/              build helper, sample generator
 │   ├── src/
 │   │   ├── app.ts            Express app (middleware, routes, error handling)
-│   │   ├── server.ts         runs migrations, starts listening, graceful shutdown
+│   │   ├── server.ts         Node entry: runs migrations, starts listening, graceful shutdown
+│   │   ├── worker.ts         Cloudflare Worker entry: same app on a D1 store
 │   │   ├── config.ts         validated environment variables
-│   │   ├── db/               pg pool, migration runner, SQL migrations, location queries
+│   │   ├── db/               Store interface + PostgreSQL and D1 implementations, migrations
 │   │   ├── lib/              JWT helpers, ZIP/text parsing, validation schemas, HttpError
 │   │   ├── middleware/       requireAuth, error handler
 │   │   └── routes/           /api/auth, /api/locations
@@ -263,4 +304,8 @@ Type-checking and linting: `npm run typecheck` (backend), `npm run build` / `npm
 - **Login doesn't reveal which emails exist.** Unknown emails and wrong passwords return the
   same message, and unknown emails are still compared against a dummy bcrypt hash so the timing
   matches.
+- **One API, two databases.** Routes talk to a small `Store` interface rather than to `pg`
+  directly. PostgreSQL (`pgStore.ts`) is the primary implementation the brief asks for; D1
+  (`d1Store.ts`) exists so the demo can run entirely on Cloudflare. The full API test suite runs
+  against both, so they can't drift apart.
 - **Map tiles.** Standard OpenStreetMap tiles need no API key, which keeps setup to one command.

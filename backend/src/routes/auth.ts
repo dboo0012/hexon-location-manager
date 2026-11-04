@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { z } from "zod";
-import { pool } from "../db/pool.js";
+import type { Store } from "../db/store.js";
 import { HttpError } from "../lib/errors.js";
 import { signToken } from "../lib/jwt.js";
 import { currentUser, requireAuth } from "../middleware/requireAuth.js";
@@ -16,51 +16,41 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-interface UserRow {
-  id: number;
-  email: string;
-  password_hash: string;
-}
-
 const BCRYPT_ROUNDS = 10;
 // Compared against when the email is unknown, so login timing does not reveal which emails exist.
-const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", BCRYPT_ROUNDS);
+// A precomputed hash (same cost) of a discarded random password: Cloudflare Workers forbid
+// generating random salts at startup, so it cannot be computed when the module loads.
+const DUMMY_HASH = "$2b$10$3wDGAnpYEgFVSRfEY158DuexBzU/fpuSegnDqdmxTKLCYibzjw57a";
 
-export const authRouter = Router();
+/** Register, log in, and "who am I" endpoints. */
+export function createAuthRouter(store: Store) {
+  const router = Router();
 
-authRouter.post("/register", async (req, res) => {
-  const { email, password } = registerSchema.parse(req.body);
-  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  router.post("/register", async (req, res) => {
+    const { email, password } = registerSchema.parse(req.body);
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-  const result = await pool.query<UserRow>(
-    `INSERT INTO users (email, password_hash) VALUES ($1, $2)
-     ON CONFLICT (email) DO NOTHING
-     RETURNING id, email`,
-    [email, passwordHash],
-  );
-  const user = result.rows[0];
-  if (!user) throw new HttpError(409, "An account with this email already exists");
+    const user = await store.createUser(email, passwordHash);
+    if (!user) throw new HttpError(409, "An account with this email already exists");
 
-  res.status(201).json({ token: signToken(user), user: { id: user.id, email: user.email } });
-});
+    res.status(201).json({ token: signToken(user), user: { id: user.id, email: user.email } });
+  });
 
-authRouter.post("/login", async (req, res) => {
-  const { email, password } = loginSchema.parse(req.body);
-  const { rows } = await pool.query<UserRow>(
-    "SELECT id, email, password_hash FROM users WHERE email = $1",
-    [email],
-  );
-  const user = rows[0];
-  const ok = await bcrypt.compare(password, user?.password_hash ?? DUMMY_HASH);
-  if (!user || !ok) throw new HttpError(401, "Invalid email or password");
+  router.post("/login", async (req, res) => {
+    const { email, password } = loginSchema.parse(req.body);
+    const user = await store.findUserByEmail(email);
+    const ok = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+    if (!user || !ok) throw new HttpError(401, "Invalid email or password");
 
-  res.json({ token: signToken(user), user: { id: user.id, email: user.email } });
-});
+    res.json({ token: signToken(user), user: { id: user.id, email: user.email } });
+  });
 
-authRouter.get("/me", requireAuth, async (req, res) => {
-  const { id } = currentUser(req);
-  const { rows } = await pool.query<UserRow>("SELECT id, email FROM users WHERE id = $1", [id]);
-  // The token is valid but the account no longer exists.
-  if (!rows[0]) throw new HttpError(401, "Account not found");
-  res.json({ user: rows[0] });
-});
+  router.get("/me", requireAuth, async (req, res) => {
+    const user = await store.findUserById(currentUser(req).id);
+    // The token is valid but the account no longer exists.
+    if (!user) throw new HttpError(401, "Account not found");
+    res.json({ user: { id: user.id, email: user.email } });
+  });
+
+  return router;
+}

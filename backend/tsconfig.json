@@ -12,5 +12,7 @@
     "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src", "test", "vitest.config.ts"]
+  "include": ["src", "test", "vitest.config.ts"],
+  // The Worker entrypoint needs Cloudflare runtime types: see tsconfig.worker.json.
+  "exclude": ["src/worker.ts"]
 }

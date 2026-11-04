@@ -2,12 +2,12 @@ import AdmZip from "adm-zip";
 import request from "supertest";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
-import { pool, registerUser, resetDatabase } from "./helpers.js";
+import { closeDatabase, countLocations, registerUser, resetDatabase, store } from "./helpers.js";
 
-const app = createApp();
+const app = createApp(store);
 
 beforeEach(resetDatabase);
-afterAll(() => pool.end());
+afterAll(closeDatabase);
 
 const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
 
@@ -59,7 +59,7 @@ describe("POST /api/locations/upload", () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/exactly one .txt file/);
     expect(res.body.details.files).toEqual(["a.txt", "b.txt"]);
-    expect((await pool.query("SELECT count(*)::int AS n FROM locations")).rows[0].n).toBe(0);
+    expect(await countLocations()).toBe(0);
   });
 
   it("rejects a ZIP containing a non-text file", async () => {
@@ -88,7 +88,7 @@ describe("POST /api/locations/upload", () => {
     const res = await upload(token, zipOf({ "a.txt": `${SAMPLE}Broken,999,1\n` }));
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/1 invalid line\. Line 4: Latitude must be between/);
-    expect((await pool.query("SELECT count(*)::int AS n FROM locations")).rows[0].n).toBe(0);
+    expect(await countLocations()).toBe(0);
   });
 
   it("returns 400 when no file is attached", async () => {
